@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FocosX - The Spatial Workspace</title>
+    <meta name="description" content="A next-generation spatial workspace for researchers and deep work enthusiasts. Organize documents, notes, and data on an infinite canvas." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://your-username.github.io/your-repo/" />
+    <meta property="og:title" content="FocosX - The Spatial Workspace" />
+    <meta property="og:description" content="A next-generation spatial workspace for researchers and deep work enthusiasts. Organize documents, notes, and data on an infinite canvas." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://your-username.github.io/your-repo/" />
+    <meta property="og:image" content="./og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="FocosX - The Spatial Workspace" />
+    <meta name="twitter:description" content="A next-generation spatial workspace for researchers and deep work enthusiasts. Organize documents, notes, and data on an infinite canvas." />
+    <meta name="theme-color" content="#0f172a" />
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="./sitemap.xml" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              background: '#0f172a',
+              surface: '#1e293b',
+              primary: '#0ea5e9', // Sky 500
+              secondary: '#14b8a6', // Teal 500
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+            animation: {
+              'float': 'float 6s ease-in-out infinite',
+              'float-delayed': 'float 7s ease-in-out 2s infinite',
+              'float-slow': 'float 8s ease-in-out 1s infinite',
+              'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              'gradient-x': 'gradient-x 15s ease infinite',
+              'blob': 'blob 20s infinite alternate',
+            },
+            keyframes: {
+              float: {
+                '0%, 100%': { transform: 'translate3d(0, 0, 0)' },
+                '50%': { transform: 'translate3d(0, -20px, 0)' },
+              },
+              'gradient-x': {
+                '0%, 100%': {
+                  'background-size': '200% 200%',
+                  'background-position': 'left center'
+                },
+                '50%': {
+                  'background-size': '200% 200%',
+                  'background-position': 'right center'
+                },
+              },
+              blob: {
+                '0%': { transform: 'translate3d(0, 0, 0) scale(1)' },
+                '33%': { transform: 'translate3d(50px, -50px, 0) scale(1.2)' },
+                '66%': { transform: 'translate3d(-40px, 40px, 0) scale(0.8)' },
+                '100%': { transform: 'translate3d(20px, -20px, 0) scale(1.1)' },
+              }
+            }
+          },
+        },
+      }
+    </script>
+    <style>
+      html {
+        scroll-behavior: smooth;
+        scroll-padding-top: 100px;
+      }
+      body {
+        background-color: #0f172a;
+        color: #f8fafc;
+        font-family: 'Inter', sans-serif;
+        /* Improve text rendering */
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0f172a;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #334155;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #475569;
+      }
+      /* Improved Grid Visibility - Explicit Line Grid */
+      .dot-pattern {
+        background-size: 40px 40px;
+        background-image: 
+          linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+        mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+        -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+        /* Performance optimization for mask */
+        will-change: transform; 
+      }
+      
+      @media (max-width: 768px) {
+        .dot-pattern {
+          background-size: 30px 30px;
+          background-image: 
+            linear-gradient(to right, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+        }
+      }
+
+      /* Standard White Noise Texture - Reduced opacity for performance */
+      .bg-noise {
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+      }
+      /* Animation Delays */
+      .animation-delay-2000 {
+        animation-delay: 2s;
+      }
+      .animation-delay-4000 {
+        animation-delay: 4s;
+      }
+      .perspective-1000 {
+        perspective: 1000px;
+      }
+      
+      /* GPU Acceleration Helpers */
+      .gpu-accelerated {
+        transform: translateZ(0);
+        backface-visibility: hidden;
+        perspective: 1000px;
+      }
+    </style>
+<link rel="stylesheet" href="./index.css">
+  <script type="module" crossorigin src="./assets/index-CCH7dtaT.js"></script>
+</head>
+  <body>
+    <div id="root"></div>
+</body>
+</html>
