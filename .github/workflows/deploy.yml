@@ -55,9 +55,21 @@ jobs:
     environment:
       name: github-pages
     steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Checkout (for gh-pages push)
+        uses: actions/checkout@v4
+
+      - name: Configure git for gh-pages push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Publish `dist` to `gh-pages` using `gh-pages` package
+        env:
+          REPO_URL: https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+        run: |
+          npm i -g pnpm
+          pnpm install --silent
+          pnpm exec gh-pages -d dist -b gh-pages --repo "$REPO_URL"
 name: Deploy to GitHub Pages
 
 on:
