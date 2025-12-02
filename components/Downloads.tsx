@@ -136,6 +136,10 @@ export const Downloads: React.FC = () => {
     return assets[0];
   };
 
+  const [page, setPage] = useState<number>(1);
+  const perPage = 5;
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+
   return (
     <section className="container mx-auto px-6 pt-28 pb-12">
       <div className="max-w-3xl mx-auto text-center">
@@ -180,47 +184,133 @@ export const Downloads: React.FC = () => {
 
         {error && <div className="text-center text-red-500">{error}</div>}
 
-        {!loading && releases && releases.map(r => (
-          <article key={r.id} className="bg-slate-900/70 rounded-xl p-6 border border-slate-700 shadow-sm">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h2 className="font-semibold text-lg">{r.name || r.tag_name}</h2>
-                <div className="text-xs text-slate-400">Published {new Date(r.published_at).toLocaleString()}</div>
-              </div>
-              <div className="flex items-center gap-3">
-                <a className="text-xs text-slate-400 hover:text-white" href={`#release-${r.id}`}>Release notes</a>
-              </div>
-            </div>
+        {!loading && releases && releases.length > 0 && (() => {
+          const latest = releases[0];
+          const others = releases.slice(1);
+          const totalPages = Math.max(1, Math.ceil(others.length / perPage));
+          const pageIndex = Math.max(0, Math.min(page - 1, totalPages - 1));
+          const pageItems = others.slice(pageIndex * perPage, pageIndex * perPage + perPage);
 
-            <div id={`release-${r.id}`} className="mt-4 prose prose-invert max-w-none text-slate-300" dangerouslySetInnerHTML={{ __html: r.body || '<i>No release notes</i>' }} />
+          return (
+            <>
+              {/* Highlighted latest release */}
+              <article className="bg-gradient-to-r from-sky-900/60 to-slate-900/60 rounded-2xl p-6 border border-slate-700 shadow-lg">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                  <div>
+                    <h2 className="font-semibold text-2xl">{latest.name || latest.tag_name}</h2>
+                    <div className="text-sm text-slate-300">Published {new Date(latest.published_at).toLocaleString()}</div>
+                    <div className="mt-3 text-slate-300 prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: latest.body || '<i>No release notes</i>' }} />
+                  </div>
 
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-3">
-              {r.assets.map(a => {
-                const plat = platformFromFilename(a.name);
-                return (
-                  <div key={a.id} className="flex items-center justify-between p-3 bg-slate-800 rounded-md">
+                  <div className="flex flex-col items-stretch gap-3 w-full md:w-auto">
+                    <div className="text-slate-300 text-sm">Recommended</div>
                     <div className="flex items-center gap-3">
-                      <div className="flex items-center justify-center w-10 h-10 rounded bg-slate-700">
-                        {plat === 'windows' ? <Laptop className="w-5 h-5" /> : plat === 'mac' ? <Cpu className="w-5 h-5" /> : plat === 'linux' ? <HardDrive className="w-5 h-5" /> : <Globe className="w-5 h-5" />}
-                      </div>
-                      <div>
-                        <div className="font-medium">{a.name}</div>
-                        <div className="text-xs text-slate-400">{(a.size / 1024 / 1024).toFixed(2)} MB • {plat}</div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <button onClick={() => downloadAsset(a.browser_download_url, a.name)} className="px-3 py-2 bg-sky-500 hover:bg-sky-600 rounded text-white text-sm inline-flex items-center gap-2">
-                        <DownloadCloud className="w-4 h-4" />
-                        Download
-                      </button>
+                      {chooseBestForOS(latest.assets || []) ? (
+                        <button onClick={() => {
+                          const best = chooseBestForOS(latest.assets || []);
+                          downloadAsset(best.browser_download_url, best.name);
+                        }} className="px-6 py-3 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold inline-flex items-center gap-2 shadow">
+                          <ArrowDown className="w-4 h-4" />
+                          {`Download`}
+                        </button>
+                      ) : (
+                        <div className="px-4 py-2 rounded bg-slate-800 text-slate-400">No suitable artifact</div>
+                      )}
+                      <a href={`#release-${latest.id}`} className="px-4 py-3 rounded-lg border border-slate-700 text-sm text-slate-300 hover:bg-slate-800">Release notes</a>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          </article>
-        ))}
+                </div>
+
+                <div id={`release-${latest.id}`} className="mt-4" />
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {(latest.assets || []).map(a => {
+                    const plat = platformFromFilename(a.name);
+                    return (
+                      <div key={a.id} className="flex items-center justify-between p-3 bg-slate-800 rounded-md">
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center justify-center w-10 h-10 rounded bg-slate-700">
+                            {plat === 'windows' ? <Laptop className="w-5 h-5" /> : plat === 'mac' ? <Cpu className="w-5 h-5" /> : plat === 'linux' ? <HardDrive className="w-5 h-5" /> : <Globe className="w-5 h-5" />}
+                          </div>
+                          <div>
+                            <div className="font-medium">{a.name}</div>
+                            <div className="text-xs text-slate-400">{(a.size / 1024 / 1024).toFixed(2)} MB • {plat}</div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => downloadAsset(a.browser_download_url, a.name)} className="px-3 py-2 bg-sky-500 hover:bg-sky-600 rounded text-white text-sm inline-flex items-center gap-2">
+                            <DownloadCloud className="w-4 h-4" />
+                            Download
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </article>
+
+              {/* Older releases - collapsed, paginated */}
+              {pageItems.length === 0 && others.length === 0 ? null : (
+                <div className="mt-6 space-y-3">
+                  {pageItems.map(r => (
+                    <article key={r.id} className="bg-slate-900/70 rounded-xl p-4 border border-slate-700">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-medium">{r.name || r.tag_name}</div>
+                          <div className="text-xs text-slate-400">Published {new Date(r.published_at).toLocaleString()}</div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <a className="text-xs text-slate-400 hover:text-white" href={`#release-${r.id}`}>Notes</a>
+                          <button onClick={() => setExpandedId(expandedId === r.id ? null : r.id)} className="text-sm px-3 py-1 rounded bg-slate-800 text-slate-200">{expandedId === r.id ? 'Collapse' : 'Details'}</button>
+                        </div>
+                      </div>
+
+                      {expandedId === r.id && (
+                        <div className="mt-3">
+                          <div className="prose prose-invert text-slate-300 max-w-none" dangerouslySetInnerHTML={{ __html: r.body || '<i>No release notes</i>' }} />
+
+                          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {r.assets.map(a => {
+                              const plat = platformFromFilename(a.name);
+                              return (
+                                <div key={a.id} className="flex items-center justify-between p-3 bg-slate-800 rounded-md">
+                                  <div className="flex items-center gap-3">
+                                    <div className="flex items-center justify-center w-10 h-10 rounded bg-slate-700">
+                                      {plat === 'windows' ? <Laptop className="w-5 h-5" /> : plat === 'mac' ? <Cpu className="w-5 h-5" /> : plat === 'linux' ? <HardDrive className="w-5 h-5" /> : <Globe className="w-5 h-5" />}
+                                    </div>
+                                    <div>
+                                      <div className="font-medium">{a.name}</div>
+                                      <div className="text-xs text-slate-400">{(a.size / 1024 / 1024).toFixed(2)} MB • {plat}</div>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center gap-2">
+                                    <button onClick={() => downloadAsset(a.browser_download_url, a.name)} className="px-3 py-2 bg-sky-500 hover:bg-sky-600 rounded text-white text-sm inline-flex items-center gap-2">
+                                      <DownloadCloud className="w-4 h-4" />
+                                      Download
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </article>
+                  ))}
+
+                  {totalPages > 1 && (
+                    <div className="flex items-center justify-center gap-3 mt-4">
+                      <button onClick={() => setPage(p => Math.max(1, p - 1))} className="px-3 py-1 rounded bg-slate-800 text-slate-200">Prev</button>
+                      <div className="text-sm text-slate-300">Page {page} / {totalPages}</div>
+                      <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} className="px-3 py-1 rounded bg-slate-800 text-slate-200">Next</button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          );
+        })()}
       </div>
 
       {toast && (
