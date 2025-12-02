@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
 
 jobs:
   build-and-deploy:
@@ -24,6 +24,12 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
+
+      - name: Mirror GitHub releases into `public/releases`
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          node .github/scripts/mirror-releases.js
 
       - name: Build
         run: pnpm run build
