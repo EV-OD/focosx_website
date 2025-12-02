@@ -8,8 +8,9 @@ import { Footer } from './components/Footer';
 import { Documentation } from './components/Documentation';
 import { ApiReference } from './components/ApiReference';
 import { Changelog } from './components/Changelog';
+import { Downloads } from './components/Downloads';
 
-type Page = 'home' | 'docs' | 'api' | 'changelog';
+type Page = 'home' | 'docs' | 'api' | 'changelog' | 'downloads';
 
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<Page>('home');
@@ -51,6 +52,7 @@ const App: React.FC = () => {
         {currentPage === 'docs' && <Documentation />}
         {currentPage === 'api' && <ApiReference />}
         {currentPage === 'changelog' && <Changelog />}
+        {currentPage === 'downloads' && <Downloads />}
       </main>
 
       <Footer />

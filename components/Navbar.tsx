@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Menu, X, ArrowRight, ChevronDown, Layout, Shield, Zap, Box, Book, Code, Github, MessageCircle } from 'lucide-react';
 import { Button } from './Button';
 
-type Page = 'home' | 'docs' | 'api' | 'changelog';
+type Page = 'home' | 'docs' | 'api' | 'changelog' | 'downloads';
 
 interface NavbarProps {
   onNavigate: (page: Page, sectionId?: string) => void;
@@ -40,8 +40,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage }) => {
       <div className="container mx-auto px-6 flex items-center justify-between relative">
         {/* Logo */}
         <div 
-            className="flex items-center gap-2 group cursor-pointer z-50" 
-            onClick={() => handleNavClick('home', 'hero')}
+          className="flex items-center gap-2 group cursor-pointer z-50" 
+          onClick={() => handleNavClick('home', 'hero')}
         >
           <div className="p-2 bg-gradient-to-br from-sky-500 to-teal-500 rounded-lg group-hover:scale-105 transition-transform shadow-lg shadow-sky-500/20">
             {/* New "Deep Focus" Logo - Minimal Concentric Layers */}
@@ -143,10 +143,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage }) => {
                 size="sm" 
                 variant="primary" 
                 className="hidden md:inline-flex group shadow-sky-500/20" 
-                href="https://ev-od.github.io/focosx/"
-                target="_blank"
+              onClick={() => handleNavClick('downloads')}
             >
-                Launch App
+              Downloads
                 <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
 
@@ -191,10 +190,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage }) => {
           <div className="mt-auto">
              <Button 
                 className="w-full justify-center" 
-                href="https://ev-od.github.io/focosx/"
-                target="_blank"
+                onClick={() => handleNavClick('downloads')}
             >
-                Launch App
+                Downloads
             </Button>
           </div>
         </div>
