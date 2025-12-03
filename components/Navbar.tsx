@@ -95,7 +95,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage }) => {
               />
               <div className="pt-2 mt-2 border-t border-slate-700/50">
                 <DropdownItem 
-                    title="What's New in V2.0" 
+                    title="What's New" 
                     desc="Dual engine architecture release" 
                     icon={Zap} 
                     onClick={() => handleNavClick('changelog')}

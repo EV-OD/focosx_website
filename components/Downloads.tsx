@@ -41,6 +41,13 @@ export const Downloads: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [verbose, setVerbose] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('downloads_verbose') === 'true';
+    } catch (e) {
+      return false;
+    }
+  });
   const os = typeof navigator !== 'undefined' ? detectOS() : 'unknown';
 
   useEffect(() => {
@@ -52,10 +59,15 @@ export const Downloads: React.FC = () => {
         // Prefer local releases map (generated during CI and published to GitHub Pages)
         const localRes = await fetch('/releases/releases.json');
         if (localRes.ok) {
-          const data = await localRes.json();
-          if (!mounted) return;
-          setReleases(data);
-          return;
+          try {
+            const text = await localRes.text();
+            const data = JSON.parse(text);
+            if (!mounted) return;
+            setReleases(data);
+            return;
+          } catch (e) {
+            // local file exists but is not valid JSON (maybe an HTML 404), fall through
+          }
         }
 
         // Fallback to GitHub API
@@ -80,6 +92,12 @@ export const Downloads: React.FC = () => {
     const t = setTimeout(() => setToast(null), 3500);
     return () => clearTimeout(t);
   }, [toast]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('downloads_verbose', verbose ? 'true' : 'false');
+    } catch (e) {}
+  }, [verbose]);
 
   const downloadAsset = async (assetUrl: string, filename?: string) => {
     try {
@@ -136,6 +154,43 @@ export const Downloads: React.FC = () => {
     return assets[0];
   };
 
+  const getPackageType = (name: string) => {
+    const n = name.toLowerCase();
+    if (n.endsWith('.deb')) return '.deb';
+    if (n.endsWith('.rpm')) return '.rpm';
+    if (n.endsWith('.appimage') || n.includes('.appimage')) return 'AppImage';
+    if (n.endsWith('.dmg')) return '.dmg';
+    if (n.endsWith('.pkg')) return '.pkg';
+    if (n.endsWith('.exe')) return '.exe';
+    if (n.endsWith('.msi')) return '.msi';
+    if (n.endsWith('.zip')) return '.zip';
+    if (n.endsWith('.tar.gz') || n.endsWith('.tgz')) return '.tar.gz';
+    // fallback: try to extract extension
+    const m = n.match(/\.([a-z0-9]+)(?:$|\?)/);
+    return m ? `.${m[1]}` : '';
+  };
+
+  const friendlyPlatformLabel = (name: string, plat: string) => {
+    const pkg = getPackageType(name);
+    if (plat === 'linux') {
+      if (pkg === '.deb') return 'Linux (.deb)';
+      if (pkg === '.rpm') return 'Linux (.rpm)';
+      if (pkg === 'AppImage') return 'Linux (AppImage)';
+      return 'Linux';
+    }
+    if (plat === 'mac') {
+      if (pkg === '.dmg') return 'macOS (.dmg)';
+      if (pkg === '.pkg') return 'macOS (.pkg)';
+      return 'macOS';
+    }
+    if (plat === 'windows') {
+      if (pkg === '.exe') return 'Windows (.exe)';
+      if (pkg === '.msi') return 'Windows (.msi)';
+      return 'Windows';
+    }
+    return plat.charAt(0).toUpperCase() + plat.slice(1);
+  };
+
   const [page, setPage] = useState<number>(1);
   const perPage = 5;
   const [expandedId, setExpandedId] = useState<number | null>(null);
@@ -166,6 +221,9 @@ export const Downloads: React.FC = () => {
                     <div className="px-6 py-3 rounded bg-slate-800 text-slate-400">No suitable artifact found</div>
                   )}
                   <a href="#releases" className="px-4 py-3 rounded-lg border border-slate-700 text-sm text-slate-300 hover:bg-slate-800">View other releases</a>
+                  <button onClick={() => setVerbose(v => !v)} aria-pressed={verbose} className="px-3 py-2 ml-2 rounded-lg border border-slate-700 text-sm text-slate-300 hover:bg-slate-800">
+                    {verbose ? 'Verbose' : 'Compact'}
+                  </button>
                 </>
               );
             })()
@@ -225,6 +283,8 @@ export const Downloads: React.FC = () => {
                 <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-3">
                   {(latest.assets || []).map(a => {
                     const plat = platformFromFilename(a.name);
+                    const platLabel = friendlyPlatformLabel(a.name, plat);
+                    const sizeLabel = `${(a.size / 1024 / 1024).toFixed(verbose ? 2 : 0)} MB`;
                     return (
                       <div key={a.id} className="flex items-center justify-between p-3 bg-slate-800 rounded-md">
                         <div className="flex items-center gap-3">
@@ -232,8 +292,17 @@ export const Downloads: React.FC = () => {
                             {plat === 'windows' ? <Laptop className="w-5 h-5" /> : plat === 'mac' ? <Cpu className="w-5 h-5" /> : plat === 'linux' ? <HardDrive className="w-5 h-5" /> : <Globe className="w-5 h-5" />}
                           </div>
                           <div>
-                            <div className="font-medium">{a.name}</div>
-                            <div className="text-xs text-slate-400">{(a.size / 1024 / 1024).toFixed(2)} MB • {plat}</div>
+                            <div className="font-medium flex items-center gap-2">
+                              {verbose ? (
+                                a.name
+                              ) : (
+                                <>
+                                  <span>{platLabel}</span>
+                                  <span className="text-xs text-slate-400">• {sizeLabel}</span>
+                                </>
+                              )}
+                            </div>
+                            {verbose && <div className="text-xs text-slate-400">{(a.size / 1024 / 1024).toFixed(2)} MB • {plat} • {getPackageType(a.name)}</div>}
                           </div>
                         </div>
 

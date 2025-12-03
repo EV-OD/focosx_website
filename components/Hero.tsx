@@ -1,10 +1,43 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ArrowRight, Globe, HardDrive, PlayCircle, Sparkles } from 'lucide-react';
 import { Button } from './Button';
 import { InteractiveCanvas } from './InteractiveCanvas';
 import { FadeIn } from './FadeIn';
 
 export const Hero: React.FC = () => {
+  const [latestTag, setLatestTag] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    const repo = 'EV-OD/focosx';
+    const fetchLatest = async () => {
+      try {
+        const localRes = await fetch('/releases/releases.json');
+        if (localRes.ok) {
+          try {
+            const text = await localRes.text();
+            const data = JSON.parse(text);
+            if (!mounted) return;
+            if (Array.isArray(data) && data.length > 0) setLatestTag(data[0].tag_name || data[0].name || null);
+            return;
+          } catch (e) {
+            // not valid JSON, fall through to GitHub
+          }
+        }
+
+        const res = await fetch(`https://api.github.com/repos/${repo}/releases`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!mounted) return;
+        if (Array.isArray(data) && data.length > 0) setLatestTag(data[0].tag_name || data[0].name || null);
+      } catch (e) {
+        // silently fail, keep badge generic
+      }
+    };
+
+    fetchLatest();
+    return () => { mounted = false };
+  }, []);
   return (
     <section id="hero" className="relative pt-28 pb-16 lg:pt-32 lg:pb-24 overflow-hidden min-h-[90vh] flex flex-col">
       
@@ -55,7 +88,7 @@ export const Hero: React.FC = () => {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500 group-hover:bg-sky-400 transition-colors"></span>
                 </span>
-                <span className="text-xs font-semibold text-sky-400 tracking-wide uppercase group-hover:text-sky-300">V2.0 Now Available</span>
+                <span className="text-xs font-semibold text-sky-400 tracking-wide uppercase group-hover:text-sky-300">{latestTag ? `${latestTag} Now Available` : 'Latest Release Available'}</span>
               </div>
 
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight mb-6 text-white leading-[1.1]">
